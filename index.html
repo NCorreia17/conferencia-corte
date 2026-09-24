@@ -178,7 +178,7 @@
   }
   .drop-overlay.active{ opacity:1; }
 
-  :root{ --camera-h:42vh; }
+  :root{ --camera-h:33.33vh; }
   .camera-panel{
     position:fixed; top:0; left:0; right:0; height:var(--camera-h); background:#000; z-index:60; overflow:hidden;
   }
@@ -198,13 +198,16 @@
   body.camera-mode-active #cameraToggleBtn{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
 
   .toast{
-    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(12px); z-index:120;
-    background:var(--ink); color:var(--bg); font-size:13px; font-weight:600; padding:10px 16px; border-radius:9px;
-    box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
-    max-width:88vw; text-align:center;
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(.92); z-index:120;
+    background:var(--ink); color:var(--bg); font-size:39px; font-weight:800; padding:28px 40px; border-radius:20px;
+    box-shadow:0 16px 50px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    max-width:90vw; text-align:center; line-height:1.25;
   }
-  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
   .toast.error{ background:var(--warn); color:#fff; }
+
+  @keyframes scanFlash{ 0%{ box-shadow:0 0 0 4px var(--ok); } 100%{ box-shadow:0 0 0 4px transparent; } }
+  .scan-flash{ animation:scanFlash 1.2s ease-out; border-radius:8px; }
 
   .empty-state{ text-align:center; padding:48px 16px; color:var(--ink-muted); font-size:13.5px; }
 
@@ -634,11 +637,12 @@ function buildPillsHtml(idPrefix, rowKey, instances){
     const pIdx = codigoToPacote.get(instances[i].codigo);
     if (pIdx === undefined){
       const inst = instances[i];
+      const unitKey = escapeAttr(unitScanKey(rowKey, [inst.codigo]));
       const scanned = isUnitScanned(rowKey, [inst.codigo]);
       const pillHtml = singlePillHtml(idPrefix, inst);
       const html = scanned
-        ? `<span class="solo-wrap scanned"><span class="scan-badge solo-scan-badge" title="Conferido por leitura">${BOX_ICON_SVG}</span>${pillHtml}</span>`
-        : `<span class="solo-wrap">${pillHtml}</span>`;
+        ? `<span class="solo-wrap scanned" data-unit-key="${unitKey}"><span class="scan-badge solo-scan-badge" title="Conferido por leitura">${BOX_ICON_SVG}</span>${pillHtml}</span>`
+        : `<span class="solo-wrap" data-unit-key="${unitKey}">${pillHtml}</span>`;
       units.push({ html, count: 1 });
       i++;
       continue;
@@ -649,9 +653,10 @@ function buildPillsHtml(idPrefix, rowKey, instances){
       count++; j++;
     }
     const codigosJson = escapeAttr(JSON.stringify(pacotes[pIdx].codigos));
+    const unitKey = escapeAttr(unitScanKey(rowKey, pacotes[pIdx].codigos));
     const scanned = isUnitScanned(rowKey, pacotes[pIdx].codigos);
     const scanBadge = scanned ? `<span class="scan-badge pacote-scan-badge" title="Conferido por leitura">${BOX_ICON_SVG}</span>` : '';
-    units.push({ html: `<div class="pacote-wrap"><div class="pacote-badges"><button type="button" class="pacote-remove" data-remove-row="${escapeAttr(rowKey)}" data-remove-codigos="${codigosJson}" title="Desfazer pacote">✕</button>${scanBadge}</div>${inner}</div>`, count });
+    units.push({ html: `<div class="pacote-wrap" data-unit-key="${unitKey}"><div class="pacote-badges"><button type="button" class="pacote-remove" data-remove-row="${escapeAttr(rowKey)}" data-remove-codigos="${codigosJson}" title="Desfazer pacote">✕</button>${scanBadge}</div>${inner}</div>`, count });
     i = j;
   }
 
@@ -965,8 +970,25 @@ function processScan(text){
 
   markUnitScanned(found.rowKey, found.unit.codigos);
   found.unit.codigos.forEach(cd => writeChecked('chapa:' + found.chapa + ':' + cd, true));
+
+  state.view = 'chapa';
+  el.tabs.forEach(t => t.setAttribute('aria-selected', String(t.getAttribute('data-view') === 'chapa')));
+  collapsedKeys.delete('chapa:' + found.chapa);
+  state.query = '';
+  el.searchInput.value = '';
+  el.searchClear.hidden = true;
+
   render();
   showToast('Conferido: ' + found.unit.codigos.join(' · '), false);
+
+  const targetKey = unitScanKey(found.rowKey, found.unit.codigos);
+  requestAnimationFrame(() => {
+    const unitEl = document.querySelector('[data-unit-key="' + CSS.escape(targetKey) + '"]');
+    if (!unitEl) return;
+    unitEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    unitEl.classList.add('scan-flash');
+    setTimeout(() => unitEl.classList.remove('scan-flash'), 1200);
+  });
 }
 
 // Handheld USB/Bluetooth scanners act as a keyboard: they type the decoded text very fast,
