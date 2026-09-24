@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conferência de Corte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#eef0ea; --surface:#ffffff; --surface-2:#f5f6f0; --ink:#1b1e19; --ink-muted:#6b7066;
+    --line:#d7dacd; --accent:#c8630c; --accent-ink:#ffffff; --accent-soft:#f3e3d2; --ok:#2f7a4d; --ok-soft:#dcece1;
+    --warn:#b3401f; --warn-soft:#f6ddd3; --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14160f; --surface:#1c1f18; --surface-2:#22261c; --ink:#eef0e6; --ink-muted:#9aa08e;
+      --line:#33372a; --accent:#ff9a3d; --accent-ink:#1b1200; --accent-soft:#3a2a14; --ok:#5ec387; --ok-soft:#1c3327;
+      --warn:#ff8a63; --warn-soft:#3a2016;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14160f; --surface:#1c1f18; --surface-2:#22261c; --ink:#eef0e6; --ink-muted:#9aa08e;
+    --line:#33372a; --accent:#ff9a3d; --accent-ink:#1b1200; --accent-soft:#3a2a14; --ok:#5ec387; --ok-soft:#1c3327;
+    --warn:#ff8a63; --warn-soft:#3a2016;
+  }
+
+  *{box-sizing:border-box;}
+  body{ background:var(--bg); color:var(--ink); font-family:'IBM Plex Sans',system-ui,sans-serif; }
+  .app{ max-width:960px; margin:0 auto; padding:16px 16px 64px; }
+
+  .topbar{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--bg);
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:14px 0 12px; border-bottom:2px solid var(--ink);
+    margin-bottom:14px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; margin-right:auto; }
+  .brand-mark{
+    width:34px; height:34px; border-radius:8px; background:var(--accent); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600; font-size:15px;
+    flex:none;
+  }
+  .brand-text{ display:flex; flex-direction:column; line-height:1.2; min-width:0; }
+  .brand-text strong{ font-family:Archivo; font-weight:800; font-size:16px; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46vw; }
+  .brand-text span{ font-size:12px; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46vw; }
+
+  .tabs{ display:flex; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .tab{
+    appearance:none; border:none; background:transparent; color:var(--ink-muted); font:inherit; font-weight:600; font-size:13px;
+    padding:7px 14px; border-radius:999px; cursor:pointer;
+  }
+  .tab[aria-selected="true"]{ background:var(--ink); color:var(--bg); }
+
+  .actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .progress-chip{
+    font-family:'IBM Plex Mono'; font-size:12px; font-weight:600; background:var(--surface-2); border:1px solid var(--line);
+    padding:6px 10px; border-radius:999px; color:var(--ink-muted); white-space:nowrap;
+  }
+  .progress-chip.complete{ background:var(--ok-soft); color:var(--ok); border-color:transparent; }
+  .btn{
+    font:inherit; font-size:13px; font-weight:600; border-radius:8px; padding:8px 12px; cursor:pointer;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); white-space:nowrap;
+  }
+  .btn.upload-btn{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .btn.ghost{ background:transparent; }
+  .btn:active{ transform:translateY(1px); }
+
+  .search-row{ flex-basis:100%; }
+  .search-wrap{ position:relative; }
+  .search-input{
+    width:100%; font:inherit; font-size:13.5px; padding:9px 34px 9px 12px; border-radius:9px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); appearance:none;
+  }
+  .search-input::placeholder{ color:var(--ink-muted); }
+  .search-input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .search-input::-webkit-search-cancel-button{ -webkit-appearance:none; }
+  .search-clear{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%); width:22px; height:22px; border-radius:6px;
+    border:none; background:var(--surface-2); color:var(--ink-muted); cursor:pointer; font-size:14px; line-height:1; padding:0;
+  }
+
+  .banner{
+    background:var(--surface-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:8px;
+    padding:10px 14px; font-size:13px; color:var(--ink-muted); margin-bottom:16px; line-height:1.5;
+  }
+  .banner strong{ color:var(--ink); }
+  .banner.warn{ border-left-color:var(--warn); }
+  .banner.hidden-banner{ display:none; }
+
+  .view-heading{ font-family:Archivo; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin:18px 0 10px; }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px; overflow:hidden; break-inside:avoid; }
+  .card-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px;
+    background:var(--surface-2); border-bottom:1px solid var(--line); cursor:pointer; user-select:none;
+  }
+  .card-head:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+  .card-head h2{ margin:0; flex:1; font-family:Archivo; font-weight:700; font-size:14.5px; letter-spacing:-.005em; }
+  .card-head .sub{ font-size:11px; color:var(--ink-muted); font-family:'IBM Plex Mono'; }
+  .card-progress{ font-family:'IBM Plex Mono'; font-size:11.5px; font-weight:600; color:var(--ink-muted); flex:none; }
+  .card-progress.complete{ color:var(--ok); }
+  .card-pacotes{
+    font-family:'IBM Plex Mono'; font-size:11px; font-weight:600; color:var(--accent); background:var(--accent-soft);
+    padding:2px 7px; border-radius:6px; flex:none;
+  }
+  .labels-btn{
+    font:inherit; font-size:11px; font-weight:600; padding:5px 10px; border-radius:6px; border:1px solid var(--accent);
+    background:var(--surface); color:var(--accent); cursor:pointer; flex:none;
+  }
+  .labels-btn:hover{ background:var(--accent-soft); }
+  .chevron{ flex:none; color:var(--ink-muted); font-size:13px; transition:transform .15s ease; }
+  .card.collapsed .card-head{ border-bottom:none; }
+  .card.collapsed .chevron{ transform:rotate(-90deg); }
+  .card.collapsed .card-rows{ display:none; }
+
+  .row{
+    display:grid; grid-template-columns:40px 1fr auto; gap:12px; align-items:center; padding:11px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .row:last-child{ border-bottom:none; }
+  .letter-badge{
+    width:32px; height:32px; border-radius:7px; border:1.5px solid var(--accent); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600; font-size:14px;
+    background:var(--surface); cursor:pointer; padding:0; appearance:none; transition:background .1s ease;
+  }
+  .letter-badge:hover{ background:var(--accent-soft); }
+  .letter-badge:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .row-info{ min-width:0; }
+  .row-top{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .qty-chip{
+    font-family:'IBM Plex Mono'; font-size:11.5px; font-weight:600; background:var(--accent-soft); color:var(--accent);
+    padding:1px 7px; border-radius:6px; flex:none;
+  }
+  .row-nome{ font-weight:600; font-size:13.5px; }
+  .row-meta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:3px; font-size:12px; color:var(--ink-muted); }
+  .row-dims{ font-family:'IBM Plex Mono'; font-variant-numeric:tabular-nums; }
+  .chapa-tag{ font-family:'IBM Plex Mono'; }
+  .row-codes{ font-size:11px; color:var(--ink-muted); margin-top:3px; font-family:'IBM Plex Mono'; }
+
+  .checks{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+  .checks-line{ display:flex; gap:6px; flex-wrap:nowrap; align-items:flex-end; }
+  .check-pill{
+    display:flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--line); border-radius:7px;
+    font-family:'IBM Plex Mono'; font-size:12px; font-weight:600; cursor:pointer; user-select:none; background:var(--surface);
+    color:var(--ink-muted); touch-action:pan-y;
+  }
+  .check-pill input{ width:15px; height:15px; accent-color:var(--accent); margin:0; }
+  .check-pill.checked{ background:var(--ok-soft); border-color:transparent; color:var(--ok); }
+  .check-pill.drag-active{ outline:2px dashed var(--accent); outline-offset:1px; }
+
+  .solo-wrap{ position:relative; display:inline-flex; }
+  .solo-wrap.scanned{ margin-top:15px; }
+  .solo-scan-badge{ position:absolute; top:-15px; left:50%; transform:translateX(-50%); }
+
+  .pacote-wrap{ position:relative; display:flex; gap:6px; padding-top:11px; margin-top:3px; }
+  .pacote-wrap::before{
+    content:''; position:absolute; top:0; left:1px; right:1px; height:7px;
+    border-top:2px solid var(--accent); border-left:2px solid var(--accent); border-right:2px solid var(--accent);
+    border-radius:5px 5px 0 0; pointer-events:none;
+  }
+  .pacote-badges{
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:4px; z-index:1;
+  }
+  .pacote-remove{
+    position:static; width:16px; height:16px; border-radius:50%;
+    border:1px solid var(--accent); background:var(--surface); color:var(--accent); font-size:9px; line-height:1;
+    cursor:pointer; padding:0;
+  }
+  .scan-badge{
+    width:16px; height:16px; border-radius:50%; background:var(--ok); color:#fff; display:flex; align-items:center;
+    justify-content:center; flex:none;
+  }
+  .scan-badge svg{ width:10px; height:10px; }
+
+  .drop-overlay{
+    position:fixed; inset:0; background:color-mix(in srgb, var(--accent) 14%, transparent); border:3px dashed var(--accent);
+    display:flex; align-items:center; justify-content:center; font-family:Archivo; font-weight:700; font-size:20px;
+    color:var(--accent); z-index:50; pointer-events:none; opacity:0; transition:opacity .12s ease;
+  }
+  .drop-overlay.active{ opacity:1; }
+
+  :root{ --camera-h:42vh; }
+  .camera-panel{
+    position:fixed; top:0; left:0; right:0; height:var(--camera-h); background:#000; z-index:60; overflow:hidden;
+  }
+  .camera-panel[hidden]{ display:none; }
+  #cameraVideo{ width:100%; height:100%; object-fit:cover; display:block; }
+  .camera-overlay{
+    position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px; padding-bottom:calc(10px + env(safe-area-inset-bottom,0px)); background:linear-gradient(to top, rgba(0,0,0,.65), transparent);
+  }
+  .camera-status{ color:#fff; font-size:12.5px; font-weight:600; text-shadow:0 1px 2px rgba(0,0,0,.5); }
+  .camera-close{
+    appearance:none; border:1px solid rgba(255,255,255,.5); background:rgba(0,0,0,.35); color:#fff; width:30px; height:30px;
+    border-radius:8px; cursor:pointer; font-size:17px; line-height:1; flex:none;
+  }
+  body.camera-mode-active .app{ padding-top:var(--camera-h); }
+  body.camera-mode-active .topbar{ top:var(--camera-h); }
+  body.camera-mode-active #cameraToggleBtn{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(12px); z-index:120;
+    background:var(--ink); color:var(--bg); font-size:13px; font-weight:600; padding:10px 16px; border-radius:9px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    max-width:88vw; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.error{ background:var(--warn); color:#fff; }
+
+  .empty-state{ text-align:center; padding:48px 16px; color:var(--ink-muted); font-size:13.5px; }
+
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(10,10,8,.55); display:flex; align-items:flex-end; justify-content:center; z-index:100; padding:0; }
+  .modal-backdrop[hidden]{ display:none; }
+  @media (min-width:640px){ .modal-backdrop{ align-items:center; padding:16px; } }
+  .modal{
+    background:var(--surface); width:100%; max-width:640px; max-height:88vh; overflow-y:auto;
+    border-radius:16px 16px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,.25);
+  }
+  @media (min-width:640px){ .modal{ border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.3); } }
+  .modal-head{
+    position:sticky; top:0; background:var(--surface); display:flex; align-items:flex-start; justify-content:space-between;
+    gap:10px; padding:16px; border-bottom:1px solid var(--line); z-index:1;
+  }
+  .modal-head h3{ margin:0 0 2px; font-family:Archivo; font-weight:700; font-size:15px; }
+  .modal-sub{ font-size:12px; color:var(--ink-muted); font-family:'IBM Plex Mono'; }
+  .modal-close{
+    appearance:none; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); width:30px; height:30px;
+    border-radius:8px; cursor:pointer; font-size:17px; line-height:1; flex:none;
+  }
+  .modal-body{ padding:14px 16px 22px; display:flex; flex-direction:column; gap:12px; }
+  .modal-note{ font-size:12px; color:var(--ink-muted); }
+  .modal-item{ border:1px solid var(--line); border-radius:10px; padding:11px 12px; }
+  .modal-item-head{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .modal-code{
+    font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:12.5px; background:var(--accent-soft);
+    padding:2px 7px; border-radius:6px; flex:none;
+  }
+  .modal-piece{ font-weight:600; font-size:13.5px; }
+  .modal-num{ color:var(--ink-muted); font-weight:400; font-family:'IBM Plex Mono'; font-size:12px; }
+  .modal-meta-line{ font-size:12px; color:var(--ink-muted); margin-top:3px; }
+
+  .labels-modal{ max-width:900px; }
+  .labels-head-actions{ display:flex; align-items:center; gap:8px; flex:none; }
+  .labels-body{
+    flex-direction:row; flex-wrap:wrap; gap:16px; justify-content:center; background:var(--surface-2); padding:20px;
+  }
+  .label-card{
+    width:100%; max-width:100mm; aspect-ratio:2/1; background:#fff; color:#111; border:1px solid var(--line);
+    border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,.12); box-sizing:border-box; padding:4mm;
+    display:flex; flex-direction:column; gap:1.5mm; font-family:'IBM Plex Sans',sans-serif;
+  }
+  .label-top{ display:flex; gap:3mm; flex:1; min-height:0; }
+  .label-qr{ width:21mm; height:21mm; flex:none; line-height:0; }
+  .label-qr svg{ width:100%; height:100%; display:block; }
+  .label-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:0.7mm; overflow:hidden; }
+  .label-cliente{ font-weight:700; font-size:10px; }
+  .label-ambiente{ font-size:8.5px; color:#444; }
+  .label-nome{ font-weight:700; font-size:11px; line-height:1.2; }
+  .label-meta{ font-size:8.5px; color:#333; }
+  .label-codes-line{ margin-top:auto; display:flex; align-items:baseline; gap:2mm; }
+  .label-qty{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:10px; background:#eee; color:#111;
+    padding:1px 5px; border-radius:4px; flex:none;
+  }
+  .label-codigos{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11px; letter-spacing:.02em; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .label-barcode{ flex:none; width:100%; height:9mm; line-height:0; }
+  .label-barcode svg{ width:100%; height:100%; display:block; }
+  .label-loading{ font-size:9px; color:#888; }
+  .modal-thumb-wrap{
+    margin-top:9px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--surface-2);
+    min-height:56px; display:flex; align-items:center; justify-content:center;
+  }
+  .modal-thumb{ display:block; width:100%; height:auto; }
+  .modal-thumb-loading{ font-size:12px; color:var(--ink-muted); padding:16px; }
+
+  @media (max-width:560px){
+    .brand-text strong, .brand-text span{ max-width:60vw; }
+    .row{ grid-template-columns:1fr; }
+    .letter-badge{ width:26px; height:26px; font-size:12px; }
+    .row-top{ order:1; }
+    .checks{ order:2; margin-top:4px; }
+  }
+
+  @media print{
+    body{ background:#fff; }
+    .app{ max-width:none; padding:0; }
+    .topbar .actions, .topbar .tabs, .search-row, .banner, .drop-overlay, .modal-backdrop, .camera-panel, .toast{ display:none !important; }
+    body.camera-mode-active .app{ padding-top:0; }
+    body.camera-mode-active .topbar{ top:env(safe-area-inset-top,0px); }
+    .topbar{ position:static; border-bottom:2px solid #000; }
+    .card{ border-color:#999; break-inside:avoid; }
+    .card-head{ background:#f0f0f0; cursor:default; }
+    .chevron{ display:none; }
+    .card.collapsed .card-rows{ display:block; }
+    .check-pill{ -webkit-print-color-adjust:exact; print-color-adjust:exact; border-color:#666; }
+    .check-pill.checked{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+
+  body.printing-labels .app,
+  body.printing-labels .drop-overlay,
+  body.printing-labels #modalBackdrop{ display:none !important; }
+  @media print{
+    body.printing-labels #labelsBackdrop{
+      display:block !important; position:static; background:none; padding:0; inset:auto;
+    }
+    body.printing-labels #labelsBackdrop .modal{ all:unset; display:block; max-width:none; max-height:none; overflow:visible; }
+    body.printing-labels #labelsBackdrop .modal-head{ display:none !important; }
+    body.printing-labels #labelsBackdrop .labels-body{ padding:0; background:none; gap:0; }
+    body.printing-labels .label-card{
+      width:100mm; height:50mm; max-width:none; aspect-ratio:auto; margin:0; border:none; border-radius:0;
+      box-shadow:none; page-break-after:always; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    body.printing-labels .label-card:last-child{ page-break-after:auto; }
+    @page{ size:100mm 50mm; margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">✓</span>
+      <div class="brand-text">
+        <strong id="docTitle">—</strong>
+        <span id="docSubtitle">—</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" data-view="chapa" type="button" aria-selected="true">Por Chapa</button>
+      <button class="tab" data-view="modulo" type="button" aria-selected="false">Por Módulo</button>
+    </nav>
+    <div class="actions">
+      <span class="progress-chip" id="progressChip">0/0</span>
+      <label class="btn upload-btn">
+        Carregar PDF
+        <input type="file" id="fileInput" accept="application/pdf" hidden>
+      </label>
+      <button class="btn ghost" id="cameraToggleBtn" type="button">Câmera</button>
+      <button class="btn ghost" id="resetBtn" type="button">Limpar marcações</button>
+      <button class="btn ghost" id="printBtn" type="button">Imprimir</button>
+    </div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <input type="search" id="searchInput" class="search-input" placeholder="Buscar peça, código, módulo ou chapa…" autocomplete="off">
+        <button type="button" class="search-clear" id="searchClear" hidden aria-label="Limpar busca">×</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner" id="sampleBanner">
+    Exemplo carregado: <strong>Projeto Demonstração — Cliente Exemplo</strong> (37 peças de demonstração, nomes/medidas reais anonimizados). Carregue seu próprio PDF do cutpro acima para substituir.
+  </div>
+  <div class="banner warn hidden-banner" id="warnBanner"></div>
+
+  <main id="content"></main>
+</div>
+<div class="drop-overlay" id="dropOverlay">Solte o PDF aqui para carregar</div>
+
+<div class="camera-panel" id="cameraPanel" hidden>
+  <video id="cameraVideo" autoplay playsinline muted></video>
+  <div class="camera-overlay">
+    <span class="camera-status" id="cameraStatus">Iniciando câmera…</span>
+    <button type="button" class="camera-close" id="cameraClose" aria-label="Fechar câmera">×</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="modalTitle">—</h3>
+        <div class="modal-sub" id="modalSub"></div>
+      </div>
+      <button type="button" class="modal-close" id="modalClose" aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="labelsBackdrop" hidden>
+  <div class="modal labels-modal" role="dialog" aria-modal="true" aria-labelledby="labelsTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="labelsTitle">—</h3>
+        <div class="modal-sub" id="labelsSub"></div>
+      </div>
+      <div class="labels-head-actions">
+        <button type="button" class="btn" id="labelsPrintBtn">Imprimir etiquetas</button>
+        <button type="button" class="modal-close" id="labelsClose" aria-label="Fechar">×</button>
+      </div>
+    </div>
+    <div class="modal-body labels-body" id="labelsBody"></div>
+  </div>
+</div>
+
+<script>
+const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.3.289/pdf.min.mjs";
+const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.3.289/pdf.worker.min.mjs";
+let pdfjsLibPromise = null;
+function loadPdfJs(){
+  if (!pdfjsLibPromise){
+    pdfjsLibPromise = import(PDFJS_URL).then(lib => {
+      lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+      return lib;
+    });
+  }
+  return pdfjsLibPromise;
+}
+
+const SAMPLE ={"cliente":"Cliente Exemplo","projeto":"Projeto Demonstração","pieces":[{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"217","pecaNome":"Travessa_Frontal","dimen":"789 x 70 x 15,5","chapa":"15mm Branco TX","codigo":"1.A"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"218","pecaNome":"Travessa","dimen":"684,5 x 70 x 15,5","chapa":"15mm Branco TX","codigo":"1.B"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"219","pecaNome":"Travessa","dimen":"684,5 x 70 x 15,5","chapa":"15mm Branco TX","codigo":"2.B"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"33","pecaNome":"Base_Inferior","dimen":"746 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"1.C"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"34","pecaNome":"Base_Superior","dimen":"746 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"2.C"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"65","pecaNome":"Base_Inferior","dimen":"746 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"3.C"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"66","pecaNome":"Base_Superior","dimen":"746 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"4.C"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"36","pecaNome":"Travessa","dimen":"746 x 100 x 15,5","chapa":"15mm Branco TX","codigo":"1.D"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"96","pecaNome":"Travessa","dimen":"746 x 100 x 15,5","chapa":"15mm Branco TX","codigo":"2.D"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"17","pecaNome":"Prateleira_Interna_Móvel_15mm","dimen":"746 x 77 x 15,5","chapa":"15mm Branco TX","codigo":"1.E"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"24","pecaNome":"Prateleira_Interna_Móvel_15mm","dimen":"746 x 77 x 15,5","chapa":"15mm Branco TX","codigo":"2.E"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"49","pecaNome":"Prateleira_Interna_Móvel_15mm","dimen":"746 x 77 x 15,5","chapa":"15mm Branco TX","codigo":"3.E"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"56","pecaNome":"Prateleira_Interna_Móvel_15mm","dimen":"746 x 77 x 15,5","chapa":"15mm Branco TX","codigo":"4.E"},{"modulo":"216-Gaveta Telescópica","pecaNum":"294","pecaNome":"Lateral_Esquerda_Gaveta","dimen":"450 x 223,5 x 15,5","chapa":"15mm Branco TX","codigo":"1.F"},{"modulo":"216-Gaveta Telescópica","pecaNum":"295","pecaNome":"Lateral_Direita_Gaveta","dimen":"450 x 223,5 x 15,5","chapa":"15mm Branco TX","codigo":"2.F"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"178","pecaNome":"Lateral_Esquerda","dimen":"700 x 530 x 15,5","chapa":"15mm Branco TX","codigo":"1.G"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"179","pecaNome":"Lateral_Direita","dimen":"700 x 530 x 15,5","chapa":"15mm Branco TX","codigo":"2.G"},{"modulo":"216-Gaveta Telescópica","pecaNum":"284","pecaNome":"Traseira_Gaveta","dimen":"732 x 200 x 15,5","chapa":"15mm Branco TX","codigo":"1.H"},{"modulo":"216-Gaveta Telescópica","pecaNum":"293","pecaNome":"Contra_Frente_Gaveta","dimen":"732 x 200 x 15,5","chapa":"15mm Branco TX","codigo":"2.H"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"31","pecaNome":"Lateral_Esquerda","dimen":"815 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"1.I"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"32","pecaNome":"Lateral_Direita","dimen":"815 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"2.I"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"63","pecaNome":"Lateral_Esquerda","dimen":"815 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"3.I"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"64","pecaNome":"Lateral_Direita","dimen":"815 x 120 x 15,5","chapa":"15mm Branco TX","codigo":"4.I"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"167","pecaNome":"Prateleira_Interna_Móvel_15mm","dimen":"789 x 530 x 15,5","chapa":"15mm Branco TX","codigo":"1.J"},{"modulo":"220-Balcão Inferior Pia 820x700x530mm","pecaNum":"180","pecaNome":"Base_Inferior","dimen":"789 x 530 x 15,5","chapa":"15mm Branco TX","codigo":"2.J"},{"modulo":"37-Armário Superior 777x815x120mm","pecaNum":"35","pecaNome":"Fundo","dimen":"757 x 795 x 6","chapa":"6mm Branco TX","codigo":"1.A"},{"modulo":"97-Armário Superior 777x815x120mm","pecaNum":"95","pecaNome":"Fundo","dimen":"757 x 795 x 6","chapa":"6mm Branco TX","codigo":"2.A"},{"modulo":"216-Gaveta Telescópica","pecaNum":"296","pecaNome":"Fundo_Gaveta","dimen":"743 x 448 x 6,5","chapa":"6mm Branco TX","codigo":"1.B"},{"modulo":"276-Tamponamento Inferior","pecaNum":"275","pecaNome":"Tamponamento_Inferior","dimen":"700 x 552 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.A"},{"modulo":"278-Tamponamento Inferior","pecaNum":"277","pecaNome":"Tamponamento_Inferior","dimen":"700 x 60 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.B"},{"modulo":"153-Painel","pecaNum":"154","pecaNome":"Painel","dimen":"889,1 x 199,1 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.C"},{"modulo":"155-Painel","pecaNum":"156","pecaNome":"Painel","dimen":"889,1 x 199,1 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"2.C"},{"modulo":"181-Porta Inferior Dob Total Reta","pecaNum":"330","pecaNome":"Painel_Porta_Inferior_Dob_Total_Reta_","dimen":"422,5 x 406 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.D"},{"modulo":"195-Porta Inferior Dob Total Reta","pecaNum":"334","pecaNome":"Painel_Porta_Inferior_Dob_Total_Reta_","dimen":"422,5 x 406 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"2.D"},{"modulo":"216-Gaveta Telescópica","pecaNum":"282","pecaNome":"Painel_Gaveta","dimen":"268,5 x 816 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.E"},{"modulo":"159-Painel","pecaNum":"160","pecaNome":"Painel","dimen":"1613,1 x 129,1 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.F"},{"modulo":"13-Painel","pecaNum":"12","pecaNome":"Painel","dimen":"1644,1 x 199,1 x 15,5","chapa":"Sudati Corazzi 15mm","codigo":"1.G"}]};
+
+const el = {
+  docTitle: document.getElementById('docTitle'),
+  docSubtitle: document.getElementById('docSubtitle'),
+  content: document.getElementById('content'),
+  progressChip: document.getElementById('progressChip'),
+  sampleBanner: document.getElementById('sampleBanner'),
+  warnBanner: document.getElementById('warnBanner'),
+  fileInput: document.getElementById('fileInput'),
+  resetBtn: document.getElementById('resetBtn'),
+  printBtn: document.getElementById('printBtn'),
+  dropOverlay: document.getElementById('dropOverlay'),
+  tabs: Array.from(document.querySelectorAll('.tab')),
+  modalBackdrop: document.getElementById('modalBackdrop'),
+  modalTitle: document.getElementById('modalTitle'),
+  modalSub: document.getElementById('modalSub'),
+  modalBody: document.getElementById('modalBody'),
+  modalClose: document.getElementById('modalClose'),
+  searchInput: document.getElementById('searchInput'),
+  searchClear: document.getElementById('searchClear'),
+  labelsBackdrop: document.getElementById('labelsBackdrop'),
+  labelsTitle: document.getElementById('labelsTitle'),
+  labelsSub: document.getElementById('labelsSub'),
+  labelsBody: document.getElementById('labelsBody'),
+  labelsClose: document.getElementById('labelsClose'),
+  labelsPrintBtn: document.getElementById('labelsPrintBtn'),
+  cameraToggleBtn: document.getElementById('cameraToggleBtn'),
+  cameraPanel: document.getElementById('cameraPanel'),
+  cameraVideo: document.getElementById('cameraVideo'),
+  cameraStatus: document.getElementById('cameraStatus'),
+  cameraClose: document.getElementById('cameraClose'),
+  toast: document.getElementById('toast'),
+};
+
+let state = { cliente:'', projeto:'', pieces: [], docId:'', view:'chapa', isSample:true, pdfDoc:null, query:'' };
+let groupLookup = new Map();
+let pageImageCache = new Map();
+let collapsedKeys = new Set();
+let chapaUnitsLookup = new Map();
+
+function hashStr(s){
+  let h = 5381;
+  for (let i=0;i<s.length;i++){ h = ((h*33) ^ s.charCodeAt(i)) >>> 0; }
+  return h.toString(36);
+}
+
+function computeDocId(d){
+  return hashStr(d.cliente+'|'+d.projeto+'|'+d.pieces.map(p=>p.codigo+'~'+p.chapa+'~'+p.modulo+'~'+p.pecaNome+'~'+p.dimen).join(';'));
+}
+
+function loadDoc(d, isSample, pdfDoc){
+  if (typeof stopCamera === 'function') stopCamera();
+  if (state.pdfDoc && state.pdfDoc !== pdfDoc){
+    try { state.pdfDoc.destroy(); } catch(e){}
+  }
+  pageImageCache.clear();
+  collapsedKeys.clear();
+  state.cliente = d.cliente || 'Cliente não identificado';
+  state.projeto = d.projeto || 'Projeto não identificado';
+  state.pieces = d.pieces;
+  state.docId = computeDocId(d);
+  state.isSample = !!isSample;
+  state.pdfDoc = pdfDoc || null;
+  state.query = '';
+  el.docTitle.textContent = state.projeto;
+  el.docSubtitle.textContent = state.cliente;
+  el.sampleBanner.classList.toggle('hidden-banner', !state.isSample);
+  el.searchInput.value = '';
+  el.searchClear.hidden = true;
+  render();
+}
+
+function readChecked(id){
+  try { return localStorage.getItem('cutpro-check:'+state.docId+':'+id) === '1'; } catch(e){ return false; }
+}
+function writeChecked(id, val){
+  try { localStorage.setItem('cutpro-check:'+state.docId+':'+id, val ? '1':'0'); } catch(e){}
+}
+
+function pacoteStoreKey(){ return 'cutpro-pacotes:'+state.docId; }
+function readPacotes(){
+  try { return JSON.parse(localStorage.getItem(pacoteStoreKey()) || '[]'); } catch(e){ return []; }
+}
+function writePacotes(list){
+  try { localStorage.setItem(pacoteStoreKey(), JSON.stringify(list)); } catch(e){}
+}
+function pacotesForRow(rowKey){
+  return readPacotes().filter(p => p.rowKey === rowKey);
+}
+function getPacoteUnitsForRow(rowKey, instances){
+  const pacotes = pacotesForRow(rowKey);
+  const codigoToPacote = new Map();
+  pacotes.forEach((p, pi) => p.codigos.forEach(cd => codigoToPacote.set(cd, pi)));
+  const units = [];
+  let i = 0;
+  while (i < instances.length){
+    const pIdx = codigoToPacote.get(instances[i].codigo);
+    if (pIdx === undefined){
+      units.push({ codigos: [instances[i].codigo], instances: [instances[i]] });
+      i++;
+      continue;
+    }
+    let j = i, group = [];
+    while (j < instances.length && codigoToPacote.get(instances[j].codigo) === pIdx){
+      group.push(instances[j]);
+      j++;
+    }
+    units.push({ codigos: group.map(x => x.codigo), instances: group });
+    i = j;
+  }
+  return units;
+}
+function addPacote(rowKey, codigos){
+  const list = readPacotes();
+  list.push({ rowKey, codigos });
+  writePacotes(list);
+}
+function removePacote(rowKey, codigos){
+  const target = JSON.stringify(codigos);
+  writePacotes(readPacotes().filter(p => !(p.rowKey === rowKey && JSON.stringify(p.codigos) === target)));
+}
+
+const BOX_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 5L8 1.5L14.5 5V11L8 14.5L1.5 11V5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M1.5 5L8 8.5L14.5 5M8 8.5V14.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+
+function scannedStoreKey(){ return 'cutpro-scanned:'+state.docId; }
+function readScannedKeys(){
+  try { return JSON.parse(localStorage.getItem(scannedStoreKey()) || '[]'); } catch(e){ return []; }
+}
+function writeScannedKeys(list){
+  try { localStorage.setItem(scannedStoreKey(), JSON.stringify(list)); } catch(e){}
+}
+function unitScanKey(rowKey, codigos){ return rowKey+'|'+codigos.slice().sort().join(','); }
+function isUnitScanned(rowKey, codigos){ return readScannedKeys().includes(unitScanKey(rowKey, codigos)); }
+function markUnitScanned(rowKey, codigos){
+  const key = unitScanKey(rowKey, codigos);
+  const list = readScannedKeys();
+  if (!list.includes(key)){ list.push(key); writeScannedKeys(list); }
+}
+function clearAllScanned(){ writeScannedKeys([]); }
+
+function findUnitByCodigos(targetCodigos){
+  const target = targetCodigos.slice().sort().join(',');
+  for (const c of groupByChapa(state.pieces)){
+    for (const g of c.letters){
+      const rowKey = JSON.stringify([c.chapa, g.letter]);
+      for (const u of getPacoteUnitsForRow(rowKey, g.instances)){
+        if (u.codigos.slice().sort().join(',') === target) return { chapa: c.chapa, rowKey, unit: u };
+      }
+    }
+  }
+  return null;
+}
+
+function groupByChapa(pieces){
+  const chapaMap = new Map();
+  for (const p of pieces){
+    if (!chapaMap.has(p.chapa)) chapaMap.set(p.chapa, new Map());
+    const letterMap = chapaMap.get(p.chapa);
+    const m = /^(\d+)\.([A-Za-z]+)$/.exec(p.codigo || '');
+    const letter = m ? m[2] : '?';
+    const num = m ? parseInt(m[1],10) : 0;
+    if (!letterMap.has(letter)) letterMap.set(letter, []);
+    letterMap.get(letter).push({ ...p, num });
+  }
+  const chapas = [];
+  for (const [chapa, letterMap] of chapaMap){
+    const letters = [];
+    for (const [letter, instances] of letterMap){
+      instances.sort((a,b)=>a.num-b.num);
+      const nomes = [...new Set(instances.map(i=>i.pecaNome))];
+      const medidas = [...new Set(instances.map(i=>i.dimen))];
+      letters.push({ letter, chapa, instances, nomes: nomes.join(' / '), medidas: medidas.join(' / ') });
+    }
+    chapas.push({ chapa, letters });
+  }
+  return chapas;
+}
+
+function groupByModulo(pieces){
+  const moduloMap = new Map();
+  for (const p of pieces){
+    if (!moduloMap.has(p.modulo)) moduloMap.set(p.modulo, new Map());
+    const rowMap = moduloMap.get(p.modulo);
+    const key = p.pecaNome+'|'+p.dimen+'|'+p.chapa;
+    if (!rowMap.has(key)) rowMap.set(key, { nome:p.pecaNome, dimen:p.dimen, chapa:p.chapa, codigos:[] });
+    rowMap.get(key).codigos.push(p.codigo);
+  }
+  const modulos = [];
+  for (const [modulo, rowMap] of moduloMap){
+    modulos.push({ modulo, rows: Array.from(rowMap.values()) });
+  }
+  return modulos;
+}
+
+function normalizeText(s){
+  return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+}
+function matchesQuery(haystackArr, q){
+  if (!q) return true;
+  const nq = normalizeText(q);
+  return haystackArr.some(h => normalizeText(h).includes(nq));
+}
+
+function singlePillHtml(idPrefix, inst){
+  const id = idPrefix+':'+inst.codigo;
+  const checked = readChecked(id);
+  return `<label class="check-pill ${checked?'checked':''}" data-check-id="${escapeAttr(id)}">
+    <input type="checkbox" ${checked?'checked':''}> ${escapeHtml(inst.codigo)}
+  </label>`;
+}
+
+const PILLS_PER_LINE = 6;
+
+function buildPillsHtml(idPrefix, rowKey, instances){
+  const pacotes = pacotesForRow(rowKey);
+  const codigoToPacote = new Map();
+  pacotes.forEach((p, pi) => p.codigos.forEach(cd => codigoToPacote.set(cd, pi)));
+
+  // Build top-level units first (a solo pill, or a whole pacote bracket that must not be split across lines).
+  const units = [];
+  let i = 0;
+  while (i < instances.length){
+    const pIdx = codigoToPacote.get(instances[i].codigo);
+    if (pIdx === undefined){
+      const inst = instances[i];
+      const scanned = isUnitScanned(rowKey, [inst.codigo]);
+      const pillHtml = singlePillHtml(idPrefix, inst);
+      const html = scanned
+        ? `<span class="solo-wrap scanned"><span class="scan-badge solo-scan-badge" title="Conferido por leitura">${BOX_ICON_SVG}</span>${pillHtml}</span>`
+        : `<span class="solo-wrap">${pillHtml}</span>`;
+      units.push({ html, count: 1 });
+      i++;
+      continue;
+    }
+    let j = i, inner = '', count = 0;
+    while (j < instances.length && codigoToPacote.get(instances[j].codigo) === pIdx){
+      inner += singlePillHtml(idPrefix, instances[j]);
+      count++; j++;
+    }
+    const codigosJson = escapeAttr(JSON.stringify(pacotes[pIdx].codigos));
+    const scanned = isUnitScanned(rowKey, pacotes[pIdx].codigos);
+    const scanBadge = scanned ? `<span class="scan-badge pacote-scan-badge" title="Conferido por leitura">${BOX_ICON_SVG}</span>` : '';
+    units.push({ html: `<div class="pacote-wrap"><div class="pacote-badges"><button type="button" class="pacote-remove" data-remove-row="${escapeAttr(rowKey)}" data-remove-codigos="${codigosJson}" title="Desfazer pacote">✕</button>${scanBadge}</div>${inner}</div>`, count });
+    i = j;
+  }
+
+  // Chunk units into lines of up to PILLS_PER_LINE pills each, so 1–6 sit on one line, 7–12 on the next, and so on.
+  const lines = [];
+  let current = [], currentCount = 0;
+  for (const u of units){
+    if (currentCount > 0 && currentCount + u.count > PILLS_PER_LINE){
+      lines.push(current);
+      current = []; currentCount = 0;
+    }
+    current.push(u);
+    currentCount += u.count;
+  }
+  if (current.length) lines.push(current);
+
+  return lines.map(line => `<div class="checks-line">${line.map(u=>u.html).join('')}</div>`).join('');
+}
+
+function renderChapaView(){
+  const chapas = groupByChapa(state.pieces);
+  groupLookup.clear();
+  chapaUnitsLookup.clear();
+  let html = '<div class="view-heading">Conferência por chapa</div>';
+  let totalAll=0, checkedAll=0, anyRendered=false;
+  chapas.forEach((c) => {
+    let cardTotal=0, cardChecked=0, cardPacotes=0, cardHasMatch=false;
+    let rowsHtml = '';
+    let chapaUnits = [];
+    for (const g of c.letters){
+      const rowKey = JSON.stringify([c.chapa, g.letter]);
+      groupLookup.set(rowKey, g);
+      for (const inst of g.instances){
+        cardTotal++;
+        if (readChecked('chapa:'+c.chapa+':'+inst.codigo)) cardChecked++;
+      }
+      const units = getPacoteUnitsForRow(rowKey, g.instances);
+      chapaUnits = chapaUnits.concat(units);
+      cardPacotes += units.length;
+      const haystack = [c.chapa, g.letter, g.nomes, g.medidas, ...g.instances.flatMap(i=>[i.codigo,i.modulo,i.pecaNum])];
+      if (matchesQuery(haystack, state.query)){
+        cardHasMatch = true;
+        const pillsHtml = buildPillsHtml('chapa:'+c.chapa, rowKey, g.instances);
+        rowsHtml += `<div class="row">
+          <button type="button" class="letter-badge" data-gkey="${escapeAttr(rowKey)}" title="Ver etiquetas do grupo ${escapeAttr(g.letter)}">${escapeHtml(g.letter)}</button>
+          <div class="row-info">
+            <div class="row-top"><span class="qty-chip">×${g.instances.length}</span><span class="row-nome">${escapeHtml(g.nomes)}</span></div>
+            <div class="row-meta"><span class="row-dims">${escapeHtml(g.medidas)}</span><span class="chapa-tag">${escapeHtml(c.chapa)}</span></div>
+          </div>
+          <div class="checks" data-row-key="${escapeAttr(rowKey)}">${pillsHtml}</div>
+        </div>`;
+      }
+    }
+    totalAll += cardTotal; checkedAll += cardChecked;
+    chapaUnitsLookup.set(c.chapa, chapaUnits);
+    if (!cardHasMatch) return;
+    anyRendered = true;
+    const complete = cardTotal>0 && cardChecked===cardTotal;
+    const key = 'chapa:'+c.chapa;
+    const collapsed = !state.query && collapsedKeys.has(key);
+    html += `<section class="card ${collapsed?'collapsed':''}">
+      <div class="card-head" data-toggle="${escapeAttr(key)}" role="button" tabindex="0" aria-expanded="${!collapsed}">
+        <h2>${escapeHtml(c.chapa)}</h2>
+        <span class="card-progress ${complete?'complete':''}">${cardChecked}/${cardTotal}</span>
+        <span class="card-pacotes">${cardPacotes} pacote${cardPacotes===1?'':'s'}</span>
+        <button type="button" class="labels-btn" data-labels-chapa="${escapeAttr(c.chapa)}">Etiquetas</button>
+        <span class="chevron">⌄</span>
+      </div>
+      <div class="card-rows">${rowsHtml}</div>
+    </section>`;
+  });
+  if (!anyRendered){
+    html += state.query
+      ? `<div class="empty-state">Nenhum resultado para "${escapeHtml(state.query)}".</div>`
+      : '<div class="empty-state">Nenhuma peça encontrada.</div>';
+  }
+  el.content.innerHTML = html;
+  return { total: totalAll, checked: checkedAll };
+}
+
+function renderModuloView(){
+  const modulos = groupByModulo(state.pieces);
+  let html = '<div class="view-heading">Conferência por módulo</div>';
+  let totalAll=0, checkedAll=0, anyRendered=false;
+  for (const m of modulos){
+    let cardTotal=0, cardChecked=0, cardHasMatch=false;
+    let rowsHtml = '';
+    for (const r of m.rows){
+      const id = 'modulo:'+m.modulo+':'+r.nome+':'+r.dimen+':'+r.chapa;
+      const checked = readChecked(id);
+      cardTotal++; if (checked) cardChecked++;
+      const haystack = [m.modulo, r.nome, r.dimen, r.chapa, ...r.codigos];
+      if (matchesQuery(haystack, state.query)){
+        cardHasMatch = true;
+        rowsHtml += `<div class="row" style="grid-template-columns:1fr auto;">
+          <div class="row-info">
+            <div class="row-top"><span class="qty-chip">×${r.codigos.length}</span><span class="row-nome">${escapeHtml(r.nome)}</span></div>
+            <div class="row-meta"><span class="row-dims">${escapeHtml(r.dimen)}</span><span class="chapa-tag">${escapeHtml(r.chapa)}</span></div>
+            <div class="row-codes">cód. ${escapeHtml(r.codigos.join(', '))}</div>
+          </div>
+          <div class="checks">
+            <label class="check-pill ${checked?'checked':''}" data-check-id="${escapeAttr(id)}">
+              <input type="checkbox" ${checked?'checked':''}> conferir
+            </label>
+          </div>
+        </div>`;
+      }
+    }
+    totalAll += cardTotal; checkedAll += cardChecked;
+    if (!cardHasMatch) continue;
+    anyRendered = true;
+    const complete = cardTotal>0 && cardChecked===cardTotal;
+    const key = 'modulo:'+m.modulo;
+    const collapsed = !state.query && collapsedKeys.has(key);
+    html += `<section class="card ${collapsed?'collapsed':''}">
+      <div class="card-head" data-toggle="${escapeAttr(key)}" role="button" tabindex="0" aria-expanded="${!collapsed}">
+        <h2>${escapeHtml(m.modulo)}</h2>
+        <span class="card-progress ${complete?'complete':''}">${cardChecked}/${cardTotal}</span>
+        <span class="chevron">⌄</span>
+      </div>
+      <div class="card-rows">${rowsHtml}</div>
+    </section>`;
+  }
+  if (!anyRendered){
+    html += state.query
+      ? `<div class="empty-state">Nenhum resultado para "${escapeHtml(state.query)}".</div>`
+      : '<div class="empty-state">Nenhuma peça encontrada.</div>';
+  }
+  el.content.innerHTML = html;
+  return { total: totalAll, checked: checkedAll };
+}
+
+function render(){
+  const counts = state.view === 'chapa' ? renderChapaView() : renderModuloView();
+  el.progressChip.textContent = `${counts.checked}/${counts.total}`;
+  el.progressChip.classList.toggle('complete', counts.total>0 && counts.checked===counts.total);
+}
+
+async function renderPageImage(pageIndex){
+  if (pageImageCache.has(pageIndex)) return pageImageCache.get(pageIndex);
+  const page = await state.pdfDoc.getPage(pageIndex);
+  const viewport = page.getViewport({ scale: 2 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const dataUrl = canvas.toDataURL('image/png');
+  pageImageCache.set(pageIndex, dataUrl);
+  return dataUrl;
+}
+
+function openGroupModal(g){
+  const hasDoc = !!state.pdfDoc;
+  el.modalTitle.textContent = `${g.chapa} — grupo ${g.letter}`;
+  el.modalSub.textContent = `${g.instances.length} etiqueta(s) com essa medida`;
+  el.modalBody.innerHTML = g.instances.map(inst => `
+    <div class="modal-item">
+      <div class="modal-item-head">
+        <span class="modal-code">${escapeHtml(inst.codigo)}</span>
+        <span class="modal-piece">${escapeHtml(inst.pecaNome)} <span class="modal-num">#${escapeHtml(inst.pecaNum)}</span></span>
+      </div>
+      <div class="modal-meta-line">${escapeHtml(inst.modulo)}</div>
+      ${hasDoc && inst.pageIndex ? `<div class="modal-thumb-wrap" id="pgwrap-${inst.pageIndex}"><span class="modal-thumb-loading">carregando etiqueta…</span></div>` : ''}
+    </div>
+  `).join('') + (!hasDoc ? '<div class="modal-note">Carregue o PDF original (não o exemplo) para ver a imagem de cada etiqueta aqui.</div>' : '');
+  el.modalBackdrop.hidden = false;
+  if (hasDoc){
+    for (const inst of g.instances){
+      if (!inst.pageIndex) continue;
+      renderPageImage(inst.pageIndex).then(dataUrl => {
+        const wrap = document.getElementById('pgwrap-'+inst.pageIndex);
+        if (wrap) wrap.innerHTML = `<img class="modal-thumb" src="${dataUrl}" alt="Etiqueta ${escapeAttr(inst.codigo)}">`;
+      }).catch(() => {
+        const wrap = document.getElementById('pgwrap-'+inst.pageIndex);
+        if (wrap) wrap.innerHTML = '<span class="modal-thumb-loading">não foi possível carregar a imagem</span>';
+      });
+    }
+  }
+}
+
+function closeModal(){ el.modalBackdrop.hidden = true; }
+
+el.modalClose.addEventListener('click', closeModal);
+el.modalBackdrop.addEventListener('click', (e) => { if (e.target === el.modalBackdrop) closeModal(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (!el.modalBackdrop.hidden) closeModal();
+  if (!el.labelsBackdrop.hidden) closeLabelsModal();
+});
+
+const QR_URL = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js";
+const BARCODE_URL = "https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js";
+const loadedScripts = new Map();
+function loadScript(url){
+  if (loadedScripts.has(url)) return loadedScripts.get(url);
+  const p = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Falha ao carregar '+url));
+    document.head.appendChild(s);
+  });
+  loadedScripts.set(url, p);
+  return p;
+}
+async function ensureLabelLibs(){
+  if (typeof window.qrcode === 'undefined') await loadScript(QR_URL);
+  if (typeof window.JsBarcode === 'undefined') await loadScript(BARCODE_URL);
+  // The library's default byte-mode encoder treats each char as one raw byte, which corrupts
+  // accented characters (ç, ã, õ...) for any UTF-8-aware QR reader. Force proper UTF-8 bytes.
+  if (window.qrcode && window.qrcode.stringToBytesFuncs && window.qrcode.stringToBytesFuncs['UTF-8']){
+    window.qrcode.stringToBytesFuncs['default'] = window.qrcode.stringToBytesFuncs['UTF-8'];
+  }
+}
+
+function labelCardHtml(chapa, unit, idx){
+  const nomes = [...new Set(unit.instances.map(i => i.pecaNome))].join(' / ');
+  const medidas = unit.instances[0].dimen;
+  const codigosText = unit.codigos.join(' · ');
+  return `<div class="label-card">
+    <div class="label-top">
+      <div class="label-qr" id="labelQr-${idx}"><span class="label-loading">QR…</span></div>
+      <div class="label-info">
+        <div class="label-cliente">${escapeHtml(state.cliente)}</div>
+        <div class="label-ambiente">${escapeHtml(state.projeto)}</div>
+        <div class="label-nome">${escapeHtml(nomes)}</div>
+        <div class="label-meta">${escapeHtml(medidas)} &nbsp;·&nbsp; ${escapeHtml(chapa)}</div>
+        <div class="label-codes-line">
+          <span class="label-qty">×${unit.instances.length}</span>
+          <span class="label-codigos">${escapeHtml(codigosText)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="label-barcode" id="labelBar-${idx}"></div>
+  </div>`;
+}
+
+function renderLabelVisuals(chapa, unit, idx){
+  const nomes = [...new Set(unit.instances.map(i => i.pecaNome))].join(' / ');
+  const medidas = unit.instances[0].dimen;
+  const payload = JSON.stringify({ cliente: state.cliente, ambiente: state.projeto, nome: nomes, medidas, chapa, codigos: unit.codigos });
+  const qrEl = document.getElementById('labelQr-'+idx);
+  if (qrEl){
+    try {
+      const qr = window.qrcode(0, 'M');
+      qr.addData(payload);
+      qr.make();
+      qrEl.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 0 });
+    } catch(e){ qrEl.innerHTML = '<span class="label-loading">erro no QR</span>'; }
+  }
+  const barEl = document.getElementById('labelBar-'+idx);
+  if (barEl){
+    try {
+      const svgNs = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNs, 'svg');
+      barEl.innerHTML = '';
+      barEl.appendChild(svg);
+      window.JsBarcode(svg, unit.codigos.join('+'), { format:'CODE128', width:1.3, height:60, displayValue:false, margin:0 });
+    } catch(e){ barEl.innerHTML = '<span class="label-loading">erro no código</span>'; }
+  }
+}
+
+async function openLabelsModal(chapa){
+  const units = chapaUnitsLookup.get(chapa) || [];
+  el.labelsTitle.textContent = 'Etiquetas de pacote — ' + chapa;
+  el.labelsSub.textContent = units.length + ' etiqueta(s) · 100×100mm';
+  el.labelsBody.innerHTML = units.map((u, idx) => labelCardHtml(chapa, u, idx)).join('') ||
+    '<div class="modal-note">Nenhum pacote nesta chapa.</div>';
+  el.labelsBackdrop.hidden = false;
+  try {
+    await ensureLabelLibs();
+    units.forEach((u, idx) => renderLabelVisuals(chapa, u, idx));
+  } catch(e){
+    el.labelsBody.insertAdjacentHTML('afterbegin', '<div class="modal-note">Não foi possível carregar as bibliotecas de QR/código de barras (verifique sua conexão) — as etiquetas ficarão sem os códigos.</div>');
+  }
+}
+
+function closeLabelsModal(){ el.labelsBackdrop.hidden = true; }
+
+el.labelsClose.addEventListener('click', closeLabelsModal);
+el.labelsBackdrop.addEventListener('click', (e) => { if (e.target === el.labelsBackdrop) closeLabelsModal(); });
+el.labelsPrintBtn.addEventListener('click', () => {
+  document.body.classList.add('printing-labels');
+  window.print();
+});
+window.addEventListener('afterprint', () => { document.body.classList.remove('printing-labels'); });
+
+let toastTimer = null;
+function showToast(msg, isError){
+  el.toast.textContent = msg;
+  el.toast.classList.toggle('error', !!isError);
+  el.toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove('show'), 2600);
+}
+
+function processScan(text){
+  text = (text || '').trim();
+  if (!text) return;
+  let codigos = null;
+  try {
+    const obj = JSON.parse(text);
+    if (obj && Array.isArray(obj.codigos) && obj.codigos.length) codigos = obj.codigos;
+  } catch(e){}
+  if (!codigos) codigos = text.split('+').map(s => s.trim()).filter(Boolean);
+  if (!codigos.length){ showToast('Código ilegível.', true); return; }
+
+  const found = findUnitByCodigos(codigos);
+  if (!found){ showToast('Código não encontrado: ' + text, true); return; }
+
+  markUnitScanned(found.rowKey, found.unit.codigos);
+  found.unit.codigos.forEach(cd => writeChecked('chapa:' + found.chapa + ':' + cd, true));
+  render();
+  showToast('Conferido: ' + found.unit.codigos.join(' · '), false);
+}
+
+// Handheld USB/Bluetooth scanners act as a keyboard: they type the decoded text very fast,
+// much faster than a person, then send Enter. Detect that cadence to tell a scan from typing.
+let scanBuffer = '';
+let scanBufferStart = 0;
+let lastScanKeyAt = 0;
+document.addEventListener('keydown', (e) => {
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  const now = Date.now();
+  if (e.key === 'Enter'){
+    if (scanBuffer.length >= 3 && (now - scanBufferStart) < 800) processScan(scanBuffer);
+    scanBuffer = '';
+    return;
+  }
+  if (e.key.length === 1){
+    if (now - lastScanKeyAt > 60) scanBuffer = '';
+    if (scanBuffer === '') scanBufferStart = now;
+    scanBuffer += e.key;
+    lastScanKeyAt = now;
+  }
+});
+
+const ZXING_URL = "https://cdn.jsdelivr.net/npm/@zxing/library@0.23.0/umd/index.min.js";
+let zxingReader = null;
+let cameraActive = false;
+let lastCamScanValue = '';
+let lastCamScanAt = 0;
+
+async function ensureZXing(){
+  if (typeof window.ZXing === 'undefined') await loadScript(ZXING_URL);
+}
+
+async function startCamera(){
+  document.body.classList.add('camera-mode-active');
+  el.cameraPanel.hidden = false;
+  el.cameraStatus.textContent = 'Carregando leitor…';
+  try {
+    await ensureZXing();
+  } catch(e){
+    showToast('Não foi possível carregar o leitor de câmera (verifique sua conexão).', true);
+    stopCamera();
+    return;
+  }
+  if (!zxingReader) zxingReader = new window.ZXing.BrowserMultiFormatReader();
+  el.cameraStatus.textContent = 'Abrindo câmera…';
+  try {
+    await zxingReader.decodeFromConstraints(
+      { video: { facingMode: { ideal: 'environment' } } },
+      el.cameraVideo,
+      (result) => {
+        if (!result) return;
+        const text = result.getText();
+        const now = Date.now();
+        if (text === lastCamScanValue && now - lastCamScanAt < 2500) return;
+        lastCamScanValue = text; lastCamScanAt = now;
+        processScan(text);
+      }
+    );
+    cameraActive = true;
+    el.cameraStatus.textContent = 'Aponte para o QR ou código de barras da etiqueta';
+  } catch(e){
+    el.cameraStatus.textContent = 'Não foi possível acessar a câmera.';
+    showToast('Não foi possível acessar a câmera (permissão negada ou indisponível).', true);
+  }
+}
+
+function stopCamera(){
+  if (zxingReader){ try { zxingReader.reset(); } catch(e){} }
+  cameraActive = false;
+  document.body.classList.remove('camera-mode-active');
+  el.cameraPanel.hidden = true;
+}
+
+el.cameraToggleBtn.addEventListener('click', () => { if (cameraActive) stopCamera(); else startCamera(); });
+el.cameraClose.addEventListener('click', stopCamera);
+
+function toggleCollapsed(key){
+  if (collapsedKeys.has(key)) collapsedKeys.delete(key); else collapsedKeys.add(key);
+  render();
+}
+
+el.content.addEventListener('click', (e) => {
+  const removeBtn = e.target.closest('.pacote-remove');
+  if (removeBtn){
+    removePacote(removeBtn.getAttribute('data-remove-row'), JSON.parse(removeBtn.getAttribute('data-remove-codigos')));
+    render();
+    return;
+  }
+  const badge = e.target.closest('.letter-badge');
+  if (badge){
+    const g = groupLookup.get(badge.getAttribute('data-gkey'));
+    if (g) openGroupModal(g);
+    return;
+  }
+  const labelsBtn = e.target.closest('.labels-btn');
+  if (labelsBtn){
+    openLabelsModal(labelsBtn.getAttribute('data-labels-chapa'));
+    return;
+  }
+  const toggle = e.target.closest('.card-head');
+  if (toggle) toggleCollapsed(toggle.getAttribute('data-toggle'));
+});
+
+let dragSel = null;
+
+el.content.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  const pill = e.target.closest('.check-pill');
+  if (!pill) return;
+  const checksEl = pill.closest('.checks');
+  if (!checksEl) return;
+  const pills = Array.from(checksEl.querySelectorAll('.check-pill'));
+  dragSel = { checksEl, pills, startIdx: pills.indexOf(pill), endIdx: pills.indexOf(pill), moved: false };
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!dragSel) return;
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+  const pill = target && target.closest ? target.closest('.check-pill') : null;
+  if (!pill || !dragSel.pills.includes(pill)) return;
+  const idx = dragSel.pills.indexOf(pill);
+  if (idx !== dragSel.endIdx){
+    dragSel.endIdx = idx;
+    dragSel.moved = true;
+  }
+  const lo = Math.min(dragSel.startIdx, dragSel.endIdx), hi = Math.max(dragSel.startIdx, dragSel.endIdx);
+  dragSel.pills.forEach((p,i) => p.classList.toggle('drag-active', i>=lo && i<=hi));
+});
+
+function finalizeDragSel(sel){
+  const { checksEl, pills, startIdx, endIdx, moved } = sel;
+  pills.forEach(p => p.classList.remove('drag-active'));
+  if (!moved) return;
+  const lo = Math.min(startIdx, endIdx), hi = Math.max(startIdx, endIdx);
+  if (hi - lo < 1) return;
+  const rowKey = checksEl.getAttribute('data-row-key');
+  const codigos = pills.slice(lo, hi+1).map(p => p.getAttribute('data-check-id').split(':').pop());
+  addPacote(rowKey, codigos);
+  render();
+}
+
+document.addEventListener('mouseup', () => {
+  if (!dragSel) return;
+  const sel = dragSel;
+  dragSel = null;
+  finalizeDragSel(sel);
+});
+
+let touchDragSel = null;
+
+function pillAtTouch(touch){
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  return target && target.closest ? target.closest('.check-pill') : null;
+}
+
+el.content.addEventListener('touchstart', (e) => {
+  const pill = pillAtTouch(e.touches[0]);
+  if (!pill) return;
+  const checksEl = pill.closest('.checks');
+  if (!checksEl) return;
+  const pills = Array.from(checksEl.querySelectorAll('.check-pill'));
+  touchDragSel = { checksEl, pills, startIdx: pills.indexOf(pill), endIdx: pills.indexOf(pill), moved: false };
+}, { passive: true });
+
+el.content.addEventListener('touchmove', (e) => {
+  if (!touchDragSel) return;
+  const pill = pillAtTouch(e.touches[0]);
+  if (!pill || !touchDragSel.pills.includes(pill)) return;
+  e.preventDefault();
+  const idx = touchDragSel.pills.indexOf(pill);
+  if (idx !== touchDragSel.endIdx){
+    touchDragSel.endIdx = idx;
+    touchDragSel.moved = true;
+  }
+  const lo = Math.min(touchDragSel.startIdx, touchDragSel.endIdx), hi = Math.max(touchDragSel.startIdx, touchDragSel.endIdx);
+  touchDragSel.pills.forEach((p,i) => p.classList.toggle('drag-active', i>=lo && i<=hi));
+}, { passive: false });
+
+el.content.addEventListener('touchend', () => {
+  if (!touchDragSel) return;
+  const sel = touchDragSel;
+  touchDragSel = null;
+  finalizeDragSel(sel);
+});
+
+el.content.addEventListener('touchcancel', () => {
+  if (!touchDragSel) return;
+  touchDragSel.pills.forEach(p => p.classList.remove('drag-active'));
+  touchDragSel = null;
+});
+
+el.content.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  if (e.target.closest('.labels-btn')) return;
+  const toggle = e.target.closest('.card-head');
+  if (!toggle) return;
+  e.preventDefault();
+  toggleCollapsed(toggle.getAttribute('data-toggle'));
+});
+
+el.content.addEventListener('change', (e) => {
+  const input = e.target;
+  if (input.tagName !== 'INPUT' || input.type !== 'checkbox') return;
+  const pill = input.closest('.check-pill');
+  writeChecked(pill.getAttribute('data-check-id'), input.checked);
+  render();
+});
+
+el.tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    el.tabs.forEach(t=>t.setAttribute('aria-selected', String(t===tab)));
+    state.view = tab.getAttribute('data-view');
+    render();
+  });
+});
+
+function allCheckIdsForView(){
+  if (state.view === 'chapa'){
+    const ids = [];
+    for (const c of groupByChapa(state.pieces)) for (const g of c.letters) for (const inst of g.instances) ids.push('chapa:'+c.chapa+':'+inst.codigo);
+    return ids;
+  }
+  const ids = [];
+  for (const m of groupByModulo(state.pieces)) for (const r of m.rows) ids.push('modulo:'+m.modulo+':'+r.nome+':'+r.dimen+':'+r.chapa);
+  return ids;
+}
+
+el.resetBtn.addEventListener('click', () => {
+  if (!confirm('Limpar todas as marcações desta visão para este arquivo?')) return;
+  for (const id of allCheckIdsForView()) writeChecked(id, false);
+  clearAllScanned();
+  render();
+});
+
+el.searchInput.addEventListener('input', () => {
+  state.query = el.searchInput.value;
+  el.searchClear.hidden = !state.query;
+  render();
+});
+el.searchClear.addEventListener('click', () => {
+  state.query = '';
+  el.searchInput.value = '';
+  el.searchClear.hidden = true;
+  el.searchInput.focus();
+  render();
+});
+
+el.printBtn.addEventListener('click', () => window.print());
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+function showWarn(msg){
+  el.warnBanner.textContent = msg;
+  el.warnBanner.classList.remove('hidden-banner');
+}
+function clearWarn(){ el.warnBanner.classList.add('hidden-banner'); }
+
+const FIELD_LABELS = {
+  cliente: 'Cliente:', projeto: 'Projeto:', modulo: 'Módulo:', peca: 'Peça:', dimen: 'Dimen.:', chapa: 'Chapa:'
+};
+
+function groupTextLines(items){
+  const rows = [];
+  const TOL = 3;
+  for (const it of items){
+    const x = it.transform[4], y = it.transform[5];
+    let row = rows.find(r => Math.abs(r.y - y) <= TOL);
+    if (!row){ row = { y, items: [] }; rows.push(row); }
+    row.items.push({ x, str: it.str });
+  }
+  rows.sort((a,b) => b.y - a.y);
+  for (const r of rows) r.items.sort((a,b) => a.x - b.x);
+  return rows.map(r => r.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim()).filter(Boolean);
+}
+
+function fieldFromLines(lines, label){
+  const line = lines.find(l => l.startsWith(label));
+  return line ? line.slice(label.length).trim() : '';
+}
+
+async function parsePdf(file){
+  clearWarn();
+  let pdfjsLib;
+  try {
+    pdfjsLib = await loadPdfJs();
+  } catch (e) {
+    throw new Error('Não foi possível carregar a biblioteca de leitura de PDF (verifique sua conexão) — tente novamente.');
+  }
+  const buf = await file.arrayBuffer();
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const pieces = [];
+  let cliente = '', projeto = '';
+  let failed = 0;
+  for (let p=1; p<=doc.numPages; p++){
+    const page = await doc.getPage(p);
+    const tc = await page.getTextContent();
+    const lines = groupTextLines(tc.items);
+    const c = fieldFromLines(lines, FIELD_LABELS.cliente);
+    const pr = fieldFromLines(lines, FIELD_LABELS.projeto);
+    const modulo = fieldFromLines(lines, FIELD_LABELS.modulo);
+    const pecaRaw = fieldFromLines(lines, FIELD_LABELS.peca);
+    const dimen = fieldFromLines(lines, FIELD_LABELS.dimen);
+    const chapa = fieldFromLines(lines, FIELD_LABELS.chapa);
+    const codeLine = lines.find(l => /^\d+\.[A-Za-z]+$/.test(l));
+    if (c) cliente = c;
+    if (pr) projeto = pr;
+    const m = pecaRaw.match(/^(\d+)\s*-\s*(.+)$/);
+    if (!modulo || !m || !dimen || !chapa || !codeLine){ failed++; continue; }
+    pieces.push({ modulo, pecaNum:m[1], pecaNome:m[2].trim(), dimen, chapa, codigo:codeLine, pageIndex:p });
+  }
+  if (pieces.length === 0) throw new Error('Não foi possível reconhecer nenhuma etiqueta neste PDF.');
+  if (failed > 0) showWarn(`${failed} página(s) não tinham o formato de etiqueta esperado e foram ignoradas.`);
+  return { cliente, projeto, pieces, pdfDoc: doc };
+}
+
+async function handleFile(file){
+  if (!file || file.type !== 'application/pdf'){ showWarn('Selecione um arquivo PDF.'); return; }
+  try{
+    const data = await parsePdf(file);
+    loadDoc(data, false, data.pdfDoc);
+  } catch(err){
+    showWarn('Erro ao ler o PDF: ' + (err && err.message ? err.message : 'formato não reconhecido.'));
+  }
+}
+
+el.fileInput.addEventListener('change', () => {
+  if (el.fileInput.files[0]) handleFile(el.fileInput.files[0]);
+});
+
+let dragDepth = 0;
+window.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; el.dropOverlay.classList.add('active'); });
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth-1); if (dragDepth===0) el.dropOverlay.classList.remove('active'); });
+window.addEventListener('drop', (e) => {
+  e.preventDefault(); dragDepth = 0; el.dropOverlay.classList.remove('active');
+  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+loadDoc(SAMPLE, true);
+</script>
+
+</body>
+</html>
